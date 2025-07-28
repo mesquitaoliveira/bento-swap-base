@@ -61,7 +61,10 @@ const COIN_ID_MAP: { [symbol: string]: string } = {
   BITCOIN: "bitcoin",
 };
 
-const COINGECKO_API_BASE = "https://api.coingecko.com/api/v3";
+// Use proxy em desenvolvimento, API direta em produção
+const COINGECKO_API_BASE = import.meta.env.DEV
+  ? "/api/coingecko/api/v3"
+  : "https://api.coingecko.com/api/v3";
 
 // Função para processar queue de requests com rate limiting
 const processRequestQueue = async () => {
