@@ -197,6 +197,13 @@ Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](L
 - **Desenvolvedores** que contribuem para o projeto
 - **Usuários** que confiam na nossa solução
 
+
+## Transação Usando Avalanche ---> BRZ Base
+
+Transação Avalanche: [TX_Avalanche](https://snowtrace.io/tx/0xffda3de9d2a8707b53e1fafb22ab8490b26e6f455ec7e30d6a6de3e561749b7a)
+![alt text](image-1.png)
+Transação na Base: [TX_Base](https://basescan.org/tx/0xe7e63d774f91a77e140fa27cd989385c6c04e4d895073e576af428d59acfa6fc)
+![alt text](image.png)
 ---
 
 <div align="center">
