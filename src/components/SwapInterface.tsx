@@ -80,7 +80,8 @@ const SwapInterface: React.FC = () => {
 
   // Hook para obter preços das moedas
   const tokenSymbols = getUniqueTokenSymbols(tokens);
-  const { prices, convertAmount } = useTokenPrices(tokenSymbols);
+  const { prices, convertAmount, refetchPrices } = useTokenPrices(tokenSymbols);
+
 
   // Calcula tokens com saldos e preços atualizados
   const tokensWithData = React.useMemo(() => {
@@ -310,6 +311,11 @@ const SwapInterface: React.FC = () => {
                   Loading prices...
                 </span>
               )}
+              {Object.keys(prices).length > 0 && (
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                  Prices loaded ({Object.keys(prices).length})
+                </span>
+              )}
               {isConnected && (
                 <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -405,12 +411,14 @@ const SwapInterface: React.FC = () => {
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
               <div className="text-sm flex-1 min-w-0">
                 <p className="text-red-800 font-medium">
-                  {executionError.includes("User rejected") || executionError.includes("usuário rejeitou")
+                  {executionError.includes("User rejected") ||
+                  executionError.includes("usuário rejeitou")
                     ? "Transação Cancelada"
                     : "Erro na Transação"}
                 </p>
                 <p className="text-red-600 break-words">
-                  {executionError.includes("User rejected") || executionError.includes("usuário rejeitou")
+                  {executionError.includes("User rejected") ||
+                  executionError.includes("usuário rejeitou")
                     ? "Você cancelou a transação. Nenhum valor foi transferido."
                     : executionError}
                 </p>
@@ -494,7 +502,13 @@ const SwapInterface: React.FC = () => {
           {/* You Pay Section */}
           <div className="relative">
             <TokenInput
-              token={payToken}
+              token={
+                tokensWithData.find(
+                  (t) =>
+                    t.symbol === payToken.symbol &&
+                    t.network === payToken.network
+                ) || payToken
+              }
               amount={payAmount}
               onAmountChange={setPayAmount}
               onTokenSelect={setPayToken}
@@ -518,7 +532,13 @@ const SwapInterface: React.FC = () => {
             {/* You Receive Section */}
             <div className="">
               <TokenInput
-                token={receiveToken}
+                token={
+                  tokensWithData.find(
+                    (t) =>
+                      t.symbol === receiveToken.symbol &&
+                      t.network === receiveToken.network
+                  ) || receiveToken
+                }
                 amount={receiveAmount}
                 onAmountChange={setReceiveAmount}
                 onTokenSelect={setReceiveToken}
@@ -536,10 +556,22 @@ const SwapInterface: React.FC = () => {
               <CardContent className="p-4">
                 <TransactionSummary
                   receiveAmount={receiveAmount}
-                  receiveToken={receiveToken}
+                  receiveToken={
+                    tokensWithData.find(
+                      (t) =>
+                        t.symbol === receiveToken.symbol &&
+                        t.network === receiveToken.network
+                    ) || receiveToken
+                  }
                   slippage={slippage}
                   quote={quote}
-                  payToken={payToken}
+                  payToken={
+                    tokensWithData.find(
+                      (t) =>
+                        t.symbol === payToken.symbol &&
+                        t.network === payToken.network
+                    ) || payToken
+                  }
                   payAmount={payAmount}
                 />
               </CardContent>

@@ -30,9 +30,15 @@ const TransactionSummary: React.FC<TransactionSummaryProps> = ({
   payAmount,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const estimatedValue = (
-    parseFloat(receiveAmount) * receiveToken.price
-  ).toFixed(2);
+
+
+
+  // Calcular valor estimado com fallback se não houver preço
+  const tokenPrice = receiveToken.price || 0;
+  const estimatedValue =
+    tokenPrice > 0
+      ? (parseFloat(receiveAmount) * tokenPrice).toFixed(2)
+      : "0.00";
 
   // Calcular fees da API
   const totalFees = quote?.fees

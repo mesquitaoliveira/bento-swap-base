@@ -41,7 +41,15 @@ const TokenInput: React.FC<TokenInputProps> = ({
 
   // Hook para verificar se a wallet está conectada
   const { isConnected } = useAccount();
-  const estimatedValue = (parseFloat(amount) * token.price).toFixed(2);
+
+  // Calcular valor estimado com fallback se não houver preço
+  const tokenPrice = token.price || 0;
+  const estimatedValue =
+    tokenPrice > 0 && parseFloat(amount) > 0
+      ? (parseFloat(amount) * tokenPrice).toFixed(2)
+      : "0.00";
+
+
 
   const handleAmountChange = (value: string) => {
     if (readOnly) return;
@@ -149,12 +157,21 @@ const TokenInput: React.FC<TokenInputProps> = ({
 
           {/* Balance and Value */}
           <div className="flex justify-between items-center text-sm px-5 pb-5">
-            <Badge
-              variant="secondary"
-              className="bg-green-50 text-green-700 hover:bg-green-50"
-            >
-              ${estimatedValue}
-            </Badge>
+            {tokenPrice > 0 && parseFloat(amount) > 0 ? (
+              <Badge
+                variant="secondary"
+                className="bg-green-50 text-green-700 hover:bg-green-50"
+              >
+                ${estimatedValue}
+              </Badge>
+            ) : (
+              <Badge
+                variant="secondary"
+                className="bg-gray-50 text-gray-500 hover:bg-gray-50"
+              >
+                $0.00
+              </Badge>
+            )}
             <div className="text-muted-foreground font-medium">
               <Badge variant="secondary" className="text-xs">
                 Saldo: {isConnected ? token.balance.toFixed(4) : "0.000"}{" "}
