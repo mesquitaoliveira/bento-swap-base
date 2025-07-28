@@ -4,10 +4,13 @@ import { Token } from "../types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { useAccount } from "wagmi";
+import { useTokenBalances } from "../hooks/useTokenBalances";
 import {
   getTokenInfo,
   getChainInfo,
   DEFAULT_TOKEN_LOGO,
+  generateTokensList,
 } from "../utils/tokensInfo";
 
 interface TokenSelectModalProps {
@@ -30,13 +33,44 @@ const TokenSelectModal: React.FC<TokenSelectModalProps> = ({
   const [showNetworkDropdown, setShowNetworkDropdown] =
     useState<boolean>(false);
 
-  // Get unique networks from tokens
+  // Hook para verificar se a wallet está conectada
+  const { isConnected } = useAccount();
+
+  // Combina tokens passados como props com tokens das redes configuradas
+  const baseTokens = React.useMemo(() => {
+    const configuredTokens = generateTokensList();
+    const tokenMap = new Map();
+
+    // Adiciona tokens das configurações
+    configuredTokens.forEach((token) => {
+      const key = `${token.network}-${token.symbol}`;
+      tokenMap.set(key, token);
+    });
+
+    // Sobrescreve/adiciona tokens passados como props (podem ter configurações específicas)
+    tokens.forEach((token) => {
+      const key = `${token.network}-${token.symbol}`;
+      tokenMap.set(key, token);
+    });
+
+    return Array.from(tokenMap.values());
+  }, [tokens]);
+
+  // Hook para buscar saldos reais da wallet
+  const { updateTokensWithBalances } = useTokenBalances(baseTokens);
+
+  // Tokens com saldos atualizados
+  const allAvailableTokens = React.useMemo(() => {
+    return updateTokensWithBalances(baseTokens);
+  }, [baseTokens, updateTokensWithBalances]);
+
+  // Get unique networks from all available tokens
   const networks = [
     "All",
-    ...Array.from(new Set(tokens.map((token) => token.network))),
+    ...Array.from(new Set(allAvailableTokens.map((token) => token.network))),
   ];
 
-  const filteredTokens = tokens.filter((token) => {
+  const filteredTokens = allAvailableTokens.filter((token) => {
     const matchesSearch =
       token.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       token.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -219,10 +253,13 @@ const TokenSelectModal: React.FC<TokenSelectModalProps> = ({
                     </div>
                     <div className="text-right flex-shrink-0 min-w-[80px]">
                       <div className="text-sm font-bold text-foreground truncate">
-                        {token.balance.toFixed(4)}
+                        {isConnected ? token.balance.toFixed(4) : "0.000"}
                       </div>
                       <div className="text-xs text-muted-foreground font-medium truncate">
-                        ${(token.balance * token.price).toFixed(2)}
+                        $
+                        {isConnected
+                          ? (token.balance * token.price).toFixed(2)
+                          : "0.00"}
                       </div>
                     </div>
                   </div>

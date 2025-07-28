@@ -97,7 +97,6 @@ export const useWalletState = () => {
       */
     } catch (err) {
       setError("Failed to connect wallet. Please try again.");
-      console.error("Wallet connection error:", err);
     } finally {
       setIsConnecting(false);
     }
@@ -146,7 +145,6 @@ export const useWalletState = () => {
             ?.name || "network"
         }`
       );
-      console.error("Network switch error:", err);
     }
   };
 

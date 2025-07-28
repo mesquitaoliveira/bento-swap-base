@@ -14,7 +14,7 @@ import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 const chains = [base, mainnet, arbitrum, polygon, avalanche, optimism] as const;
 
 // Criar configuração do Wagmi com ConnectKit
-const config = createConfig(
+export const config = createConfig(
   getDefaultConfig({
     // Chains suportadas
     chains,

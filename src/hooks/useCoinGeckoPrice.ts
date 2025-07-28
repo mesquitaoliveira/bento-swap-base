@@ -215,7 +215,6 @@ export const useCoinGeckoPrice = (): UseCoinGeckoPriceReturn => {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch prices";
       setError(errorMessage);
-      console.error("Error fetching prices from CoinGecko:", err);
 
       // Em caso de rate limit, aguarda antes de permitir nova tentativa
       if (errorMessage.includes("Rate limit")) {

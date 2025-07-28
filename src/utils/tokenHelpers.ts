@@ -1,5 +1,5 @@
 import { Token } from "../types";
-import { getAllTokens, TokenInfo } from "./tokensInfo";
+import { getAllTokens, TokenInfo, generateTokensList } from "./tokensInfo";
 
 // Converte tokens do tokensInfo para o formato usado no componente
 export const convertToComponentToken = (
@@ -17,16 +17,16 @@ export const convertToComponentToken = (
   price: 0, // Será atualizado pelo hook de preços
 });
 
-// Configuração de balances padrão para demonstração
+// Configuração de balances padrão para demonstração (todos zerados)
 export const DEFAULT_BALANCES: Array<{
   symbol: string;
   network: string;
   balance: number;
 }> = [
-  { symbol: "ETH", network: "Base", balance: 0.0003 },
+  { symbol: "ETH", network: "Base", balance: 0.0 },
   { symbol: "ETH", network: "Ethereum", balance: 0.0 },
-  { symbol: "USDC", network: "Base", balance: 125.5 },
-  { symbol: "WBTC", network: "Ethereum", balance: 0.0045 },
+  { symbol: "USDC", network: "Base", balance: 0.0 },
+  { symbol: "WBTC", network: "Ethereum", balance: 0.0 },
   { symbol: "USDC", network: "Ethereum", balance: 0.0 },
   { symbol: "USDC", network: "Arbitrum", balance: 0.0 },
   { symbol: "ETH", network: "Arbitrum", balance: 0.0 },
@@ -34,12 +34,21 @@ export const DEFAULT_BALANCES: Array<{
 
 // Carrega tokens das redes disponíveis com balances configurados
 export const loadTokensWithBalances = (
-  customBalances: Array<{
+  customBalances?: Array<{
     symbol: string;
     network: string;
     balance: number;
-  }> = DEFAULT_BALANCES
+  }>
 ): Token[] => {
+  // Usa a nova função que carrega todos os tokens das redes configuradas
+  const tokensFromConfig = generateTokensList();
+
+  // Se não há balances customizados, usa os tokens da configuração
+  if (!customBalances) {
+    return tokensFromConfig;
+  }
+
+  // Aplica balances customizados se fornecidos
   const allTokensInfo = getAllTokens();
 
   return customBalances
@@ -53,14 +62,9 @@ export const loadTokensWithBalances = (
         : null;
     })
     .filter(Boolean) as Token[];
-};
-
-// Obtém todos os tokens disponíveis sem balance específico
+}; // Obtém todos os tokens disponíveis sem balance específico
 export const getAllAvailableTokens = (): Token[] => {
-  const allTokensInfo = getAllTokens();
-  return allTokensInfo.map((tokenInfo) =>
-    convertToComponentToken(tokenInfo, 0)
-  );
+  return generateTokensList();
 };
 
 // Atualiza preços dos tokens com dados do CoinGecko

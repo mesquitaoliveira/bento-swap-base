@@ -6,11 +6,13 @@ import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
+import { useAccount } from "wagmi";
 import {
   getTokenInfo,
   getChainInfo,
   DEFAULT_TOKEN_LOGO,
 } from "../utils/tokensInfo";
+import { validateNumericInput } from "../utils/inputValidation";
 
 interface TokenInputProps {
   token: Token;
@@ -37,8 +39,16 @@ const TokenInput: React.FC<TokenInputProps> = ({
 }) => {
   const [showTokenModal, setShowTokenModal] = useState(false);
 
+  // Hook para verificar se a wallet está conectada
+  const { isConnected } = useAccount();
   const estimatedValue = (parseFloat(amount) * token.price).toFixed(2);
 
+  const handleAmountChange = (value: string) => {
+    if (readOnly) return;
+
+    const validatedValue = validateNumericInput(value);
+    onAmountChange(validatedValue);
+  };
   const getBorderRadiusClass = () => {
     switch (borderRadius) {
       case "top":
@@ -116,7 +126,7 @@ const TokenInput: React.FC<TokenInputProps> = ({
             <Input
               type="text"
               value={amount}
-              onChange={(e) => onAmountChange(e.target.value)}
+              onChange={(e) => handleAmountChange(e.target.value)}
               placeholder="0.00"
               readOnly={readOnly}
               className={`text-2xl font-bold text-left bg-transparent border-none outline-none shadow-none flex-1 ${
@@ -147,7 +157,8 @@ const TokenInput: React.FC<TokenInputProps> = ({
             </Badge>
             <div className="text-muted-foreground font-medium">
               <Badge variant="secondary" className="text-xs">
-                Balance: {token.balance.toFixed(4)} {token.symbol}
+                Saldo: {isConnected ? token.balance.toFixed(4) : "0.000"}{" "}
+                {token.symbol}
               </Badge>
             </div>
           </div>

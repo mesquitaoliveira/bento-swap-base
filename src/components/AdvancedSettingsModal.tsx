@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Settings, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -10,6 +10,8 @@ interface AdvancedSettingsModalProps {
   onClose: () => void;
   slippage: string;
   onSlippageChange: (slippage: string) => void;
+  routePriority?: string;
+  onRoutePriorityChange?: (priority: string) => void;
 }
 
 const AdvancedSettingsModal: React.FC<AdvancedSettingsModalProps> = ({
@@ -17,13 +19,38 @@ const AdvancedSettingsModal: React.FC<AdvancedSettingsModalProps> = ({
   onClose,
   slippage,
   onSlippageChange,
+  routePriority = "best_return",
+  onRoutePriorityChange,
 }) => {
-  const [gasOption, setGasOption] = useState("Auto");
-  const [routePriority, setRoutePriority] = useState("Recommended");
+  const slippagePresets = ["1.0", "1.5", "2.0"];
 
-  const slippagePresets = ["0.5", "1.00", "5.00"];
-  const gasOptions = ["Auto", "None", "Medium", "Max"];
-  const routeOptions = ["Fastest", "Cheapest", "Recommended"];
+  // Mapeamento das opções em português para os valores da API
+  const routeOptionsMap = {
+    "Melhor Retorno": "best_return",
+    "Melhor Preço": "best_price",
+    "Mais Rápido": "fastest",
+    "Mais Barato": "cheapest",
+  };
+
+  const routeOptions = Object.keys(routeOptionsMap);
+
+  // Função para obter o rótulo português da prioridade da API
+  const getRoutePriorityLabel = (apiValue: string): string => {
+    const entry = Object.entries(routeOptionsMap).find(
+      ([, value]) => value === apiValue
+    );
+    return entry ? entry[0] : "Melhor Retorno";
+  };
+
+  // Função para lidar com mudança de prioridade de rota
+  const handleRoutePriorityChange = (label: string) => {
+    const apiValue = routeOptionsMap[label as keyof typeof routeOptionsMap];
+    if (onRoutePriorityChange) {
+      onRoutePriorityChange(apiValue);
+    }
+  };
+
+  const currentRoutePriorityLabel = getRoutePriorityLabel(routePriority);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -35,59 +62,22 @@ const AdvancedSettingsModal: React.FC<AdvancedSettingsModalProps> = ({
               <Settings className="w-6 h-6 text-primary" />
             </div>
             <DialogTitle className="text-2xl font-bold text-foreground">
-              Advanced Settings
+              Configurações Avançadas
             </DialogTitle>
           </div>
         </DialogHeader>
 
         <div className="space-y-8 mt-6">
-          {/* Gas on Destination */}
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <label className="text-base font-semibold text-foreground">
-                Gas on destination
-              </label>
-              <div className="group relative">
-                <Info className="w-5 h-5 text-muted-foreground hover:text-primary cursor-help transition-colors" />
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border shadow-md">
-                  Gas fee for destination chain
-                </div>
-              </div>
-            </div>
-            <div className="mb-4">
-              <Badge
-                variant="secondary"
-                className="text-lg font-bold text-green-600 bg-green-50 hover:bg-green-50 px-4 py-2"
-              >
-                $0.00
-              </Badge>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {gasOptions.map((option) => (
-                <Button
-                  key={option}
-                  variant={gasOption === option ? "default" : "outline"}
-                  onClick={() => setGasOption(option)}
-                  className={`transition-all duration-200 hover:scale-105 ${
-                    gasOption === option ? "shadow-lg" : "hover:shadow-md"
-                  }`}
-                >
-                  {option}
-                </Button>
-              ))}
-            </div>
-          </div>
-
           {/* Slippage Tolerance */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <label className="text-base font-semibold text-foreground">
-                Slippage tolerance
+                Tolerância ao Slippage
               </label>
               <div className="group relative">
                 <Info className="w-5 h-5 text-muted-foreground hover:text-primary cursor-help transition-colors" />
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border shadow-md">
-                  Maximum price movement tolerance
+                  Tolerância máxima de movimento de preço
                 </div>
               </div>
             </div>
@@ -97,7 +87,7 @@ const AdvancedSettingsModal: React.FC<AdvancedSettingsModalProps> = ({
                 value={slippage}
                 onChange={(e) => onSlippageChange(e.target.value)}
                 className="flex-1 font-semibold text-lg"
-                placeholder="0.5"
+                placeholder="1.0"
               />
               <Badge
                 variant="secondary"
@@ -128,23 +118,25 @@ const AdvancedSettingsModal: React.FC<AdvancedSettingsModalProps> = ({
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <label className="text-base font-semibold text-foreground">
-                Route Priority
+                Prioridade da Rota
               </label>
               <div className="group relative">
                 <Info className="w-5 h-5 text-muted-foreground hover:text-primary cursor-help transition-colors" />
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border shadow-md">
-                  Choose routing optimization
+                  Escolha a otimização de roteamento
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {routeOptions.map((option) => (
                 <Button
                   key={option}
-                  variant={routePriority === option ? "default" : "outline"}
-                  onClick={() => setRoutePriority(option)}
+                  variant={
+                    currentRoutePriorityLabel === option ? "default" : "outline"
+                  }
+                  onClick={() => handleRoutePriorityChange(option)}
                   className={`transition-all duration-200 hover:scale-105 ${
-                    routePriority === option
+                    currentRoutePriorityLabel === option
                       ? "bg-green-600 hover:bg-green-700 shadow-lg"
                       : "hover:shadow-md"
                   }`}
@@ -158,6 +150,23 @@ const AdvancedSettingsModal: React.FC<AdvancedSettingsModalProps> = ({
       </DialogContent>
     </Dialog>
   );
+};
+
+// Funções utilitárias para conversão - podem ser exportadas para uso em outros componentes
+export const convertSlippageToBasisPoints = (percentage: string): number => {
+  const num = parseFloat(percentage);
+  return Math.round(num * 100); // 2.0% → 200 basis points
+};
+
+export const convertBasisPointsToPercentage = (basisPoints: number): string => {
+  return (basisPoints / 100).toFixed(1);
+};
+
+export const routeOptionsMap = {
+  "Melhor Retorno": "best_return",
+  "Melhor Preço": "best_price",
+  "Mais Rápido": "fastest",
+  "Mais Barato": "cheapest",
 };
 
 export default AdvancedSettingsModal;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Clock, Zap, Shield, ChevronDown, ChevronUp, Fuel } from "lucide-react";
+import { Zap, Shield, ChevronDown, ChevronUp, Fuel } from "lucide-react";
 import { Token } from "../types";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -13,25 +13,47 @@ import {
 interface TransactionSummaryProps {
   receiveAmount: string;
   receiveToken: Token;
-  route: string;
-  estimatedTime: string;
+  route?: string;
   slippage: string;
-  totalFee: string;
+  quote?: any; // Dados da quote da API
+  payToken?: Token;
+  payAmount?: string;
 }
 
 const TransactionSummary: React.FC<TransactionSummaryProps> = ({
   receiveAmount,
   receiveToken,
   route,
-  estimatedTime,
   slippage,
-  totalFee,
+  quote,
+  payToken,
+  payAmount,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const estimatedValue = (
     parseFloat(receiveAmount) * receiveToken.price
   ).toFixed(2);
-  const feeInUSD = parseFloat(totalFee).toFixed(2);
+
+  // Calcular fees da API
+  const totalFees = quote?.fees
+    ? quote.fees.reduce(
+        (sum: number, fee: any) => sum + parseFloat(fee.value),
+        0
+      )
+    : 0;
+  const feeInUSD = totalFees.toFixed(4);
+
+  // Calcular exchange rate
+  const exchangeRate =
+    payToken && payAmount && parseFloat(payAmount) > 0
+      ? (parseFloat(receiveAmount) / parseFloat(payAmount)).toFixed(6)
+      : "0";
+
+  // Obter nome da rota dos dados da API
+  const routeName = quote?.routes?.[0]?.provider || route || "Cross-chain";
+
+  // Calcular price impact
+  const priceImpact = quote?.priceImpact || "0";
 
   return (
     <div className="space-y-4">
@@ -39,23 +61,29 @@ const TransactionSummary: React.FC<TransactionSummaryProps> = ({
       <Button
         variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-2 h-auto justify-between hover:bg-transparent"
+        className="w-full p-3 h-auto justify-between hover:bg-transparent"
       >
-        <div className="flex items-center space-x-2 text-xs">
-          <div className="flex items-center space-x-1">
-            <Zap className="w-3 h-3 text-orange-500" />
-            <span className="text-muted-foreground truncate">{route}</span>
+        <div className="flex items-center space-x-2 text-xs min-w-0 flex-1">
+          <div className="flex items-center space-x-1 min-w-0">
+            <Zap className="w-3 h-3 text-orange-500 flex-shrink-0" />
+            <span className="text-muted-foreground truncate">{routeName}</span>
           </div>
-          <div className="flex items-center space-x-1">
-            <Clock className="w-3 h-3 text-primary" />
-            <span className="text-foreground font-medium">{estimatedTime}</span>
-          </div>
-          <div className="flex items-center space-x-1">
+          {quote && (
+            <div className="flex items-center space-x-1 flex-shrink-0">
+              <Shield className="w-3 h-3 text-purple-500" />
+              <span className="text-foreground font-medium whitespace-nowrap">
+                {Math.abs(parseFloat(priceImpact)).toFixed(2)}%
+              </span>
+            </div>
+          )}
+          <div className="flex items-center space-x-1 flex-shrink-0">
             <Fuel className="w-3 h-3 text-purple-500" />
-            <span className="text-foreground font-medium">${feeInUSD}</span>
+            <span className="text-foreground font-medium whitespace-nowrap">
+              ${feeInUSD}
+            </span>
           </div>
         </div>
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
           <div className="relative w-5 h-5 rounded-full flex items-center justify-center">
             <img
               src={(() => {
@@ -74,7 +102,7 @@ const TransactionSummary: React.FC<TransactionSummaryProps> = ({
               }}
             />
           </div>
-          <span className="text-xs font-bold text-foreground truncate">
+          <span className="text-xs font-bold text-foreground whitespace-nowrap">
             {parseFloat(receiveAmount).toFixed(4)} {receiveToken.symbol}
           </span>
           {isExpanded ? (
@@ -137,13 +165,13 @@ const TransactionSummary: React.FC<TransactionSummaryProps> = ({
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-muted-foreground">
-                    You'll receive
+                    Você receberá
                   </div>
                   <Badge
                     variant="outline"
                     className="text-xs text-green-600 border-green-200"
                   >
-                    On {receiveToken.network}
+                    Na rede {receiveToken.network}
                   </Badge>
                 </div>
               </div>
@@ -156,40 +184,77 @@ const TransactionSummary: React.FC<TransactionSummaryProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Zap className="w-4 h-4 text-orange-500" />
-                <span className="text-sm text-muted-foreground">Route</span>
+                <span className="text-sm text-muted-foreground">Rota</span>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium text-foreground">
-                  {route}
+                  {routeName}
                 </span>
                 <Badge
                   variant="secondary"
                   className="text-xs bg-green-100 text-green-800 hover:bg-green-100"
                 >
-                  Best Rate
+                  Melhor Taxa
                 </Badge>
               </div>
             </div>
 
-            {/* Estimated Time */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="text-sm text-muted-foreground">
-                  Estimated Time
+            {/* Exchange Rate */}
+            {payToken && exchangeRate !== "0" && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">
+                    Taxa de Câmbio
+                  </span>
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  1 {payToken.symbol} = {exchangeRate} {receiveToken.symbol}
                 </span>
               </div>
-              <span className="text-sm font-medium text-foreground">
-                {estimatedTime}
-              </span>
-            </div>
+            )}
+
+            {/* Price Impact */}
+            {quote && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">
+                    Impacto no Preço
+                  </span>
+                </div>
+                <span
+                  className={`text-sm font-medium ${
+                    parseFloat(priceImpact) < -5
+                      ? "text-red-600"
+                      : "text-green-600"
+                  }`}
+                >
+                  {priceImpact}%
+                </span>
+              </div>
+            )}
+
+            {/* Min Received */}
+            {quote?.tokenAmountOutMin && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Shield className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm text-muted-foreground">
+                    Mín. Recebido
+                  </span>
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  {parseFloat(quote.tokenAmountOutMin).toFixed(6)}{" "}
+                  {receiveToken.symbol}
+                </span>
+              </div>
+            )}
 
             {/* Slippage */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Shield className="w-4 h-4 text-purple-500" />
                 <span className="text-sm text-muted-foreground">
-                  Max Slippage
+                  Slippage Máx.
                 </span>
               </div>
               <div className="flex items-center space-x-2">
@@ -201,7 +266,7 @@ const TransactionSummary: React.FC<TransactionSummaryProps> = ({
                     variant="secondary"
                     className="text-xs bg-amber-100 text-amber-800 hover:bg-amber-100"
                   >
-                    Low
+                    Baixo
                   </Badge>
                 )}
               </div>
@@ -209,12 +274,36 @@ const TransactionSummary: React.FC<TransactionSummaryProps> = ({
 
             {/* Divider */}
             <div className="border-t border-border pt-3">
+              {/* Fee Breakdown */}
+              {quote?.fees && quote.fees.length > 0 && (
+                <div className="mb-3 space-y-2">
+                  <span className="text-xs text-muted-foreground font-medium">
+                    Detalhamento de Taxas:
+                  </span>
+                  {quote.fees.map((fee: any, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-muted-foreground capitalize">
+                          Taxa {fee.provider}
+                        </span>
+                      </div>
+                      <span className="text-xs font-medium text-foreground">
+                        ${parseFloat(fee.value).toFixed(4)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Total Fee */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Fuel className="w-4 h-4 text-blue-500" />
                   <span className="text-sm font-semibold text-foreground">
-                    Total Fee
+                    Taxa Total
                   </span>
                 </div>
                 <div className="text-right">
@@ -222,7 +311,9 @@ const TransactionSummary: React.FC<TransactionSummaryProps> = ({
                     ${feeInUSD}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Bridge + Gas
+                    {quote?.fees && quote.fees.length > 0
+                      ? "Todos Provedores"
+                      : "Bridge + Gas"}
                   </div>
                 </div>
               </div>
