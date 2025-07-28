@@ -267,17 +267,17 @@ export const useTokenPrices = (tokenSymbols: string[]) => {
     const timeSinceLastFetch = now - lastFetchRef.current;
 
     // // Reduzir tempo de cache para debug (10 segundos em vez de 2 minutos)
-    // const debugCacheTime = 10000; // 10 segundos
-    // if (timeSinceLastFetch >= debugCacheTime || lastFetchRef.current === 0) {
-    //   console.log("Fetching prices for symbols:", tokenSymbols);
-    //   lastFetchRef.current = now;
-    //   fetchPrices(tokenSymbols);
-    // } else {
-    //   console.log(
-    //     "Using cached prices, time since last fetch:",
-    //     timeSinceLastFetch
-    //   );
-    // }
+    const debugCacheTime = 10000; // 10 segundos
+    if (timeSinceLastFetch >= debugCacheTime || lastFetchRef.current === 0) {
+      //console.log("Fetching prices for symbols:", tokenSymbols);
+      lastFetchRef.current = now;
+      fetchPrices(tokenSymbols);
+    } else {
+      //console.log(
+      //  "Using cached prices, time since last fetch:",
+      //  timeSinceLastFetch
+      //);
+    }
   }, [tokenSymbols, fetchPrices]);
 
   useEffect(() => {
