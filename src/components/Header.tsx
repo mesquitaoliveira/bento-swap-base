@@ -24,6 +24,7 @@ import polygonLogo from "../assets/polygon-logo.png";
 import avalancheLogo from "../assets/avalanche-logo.png";
 import arbitrumLogo from "../assets/arbitrum-logo.png";
 import optimismLogo from "../assets/optimism-logo.png";
+import bentoLogo from "../assets/bento-logo.svg";
 
 interface HeaderProps {
   className?: string;
@@ -121,9 +122,7 @@ const Header: React.FC<HeaderProps> = ({ className = "" }) => {
           {/* Logo e título */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">B</span>
-              </div>
+              <img src={bentoLogo} alt="Bento Swap Logo" className="w-8 h-8" />
               <h1 className="text-xl font-bold text-gray-900">Bento Swap</h1>
             </div>
           </div>

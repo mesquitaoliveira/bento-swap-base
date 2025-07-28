@@ -211,7 +211,7 @@ const SwapInterface: React.FC = () => {
       return "Enter amount";
     }
     if (quoteError) {
-      return "Quote Error - Try Again";
+      return "Quote Error - Tentar novamente";
     }
     if (!quote) {
       return "Get Quote";
@@ -585,7 +585,7 @@ const SwapInterface: React.FC = () => {
                   variant="outline"
                   className="w-full"
                 >
-                  {isSuccess ? "New Swap" : "Try Again"}
+                  {isSuccess ? "Novo Swap" : "Tentar Novamente"}
                 </Button>
               )}
             </div>

@@ -109,8 +109,6 @@ export const useSwapQuote = (): UseSwapQuoteResult => {
         if (params.slippage !== undefined) {
           requestData.slippage = params.slippage;
         }
-        console.log("Fetching quote with params:", requestData);
-
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
         };
