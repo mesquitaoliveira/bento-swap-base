@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";
-import { cn } from "../lib/utils";
+import { cn } from "@shared/lib/utils";
 
 export type NotificationType =
   | "info"

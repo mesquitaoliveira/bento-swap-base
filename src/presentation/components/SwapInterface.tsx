@@ -6,17 +6,17 @@ import AdvancedSettingsModal, {
   convertSlippageToBasisPoints,
 } from "./AdvancedSettingsModal";
 import { SwapNotifications } from "./SwapNotifications";
-import { Token } from "../types";
+import { Token } from "@domain/types";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { useTokenPrices } from "../hooks/useCoinGeckoPrice";
-import { useTokenBalances } from "../hooks/useTokenBalances";
-import { useSwap } from "../hooks/useSwap";
+import { useTokenPrices } from "@application/hooks/useCoinGeckoPrice";
+import { useTokenBalances } from "@application/hooks/useTokenBalances";
+import { useSwap } from "@application/hooks/useSwap";
 import {
   loadTokensWithBalances,
   updateTokensWithPrices,
   getUniqueTokenSymbols,
-} from "../utils/tokenHelpers";
+} from "@shared/utils/tokenHelpers";
 import { useAccount } from "wagmi";
 import { ConnectKitButton } from "connectkit";
 

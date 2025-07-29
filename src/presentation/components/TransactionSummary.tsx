@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Zap, Shield, ChevronDown, ChevronUp, Fuel } from "lucide-react";
-import { Token } from "../types";
+import { Token } from "@domain/types";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -8,7 +8,7 @@ import {
   getTokenInfo,
   getChainInfo,
   DEFAULT_TOKEN_LOGO,
-} from "../utils/tokensInfo";
+} from "@shared/utils/tokensInfo";
 
 interface TransactionSummaryProps {
   receiveAmount: string;

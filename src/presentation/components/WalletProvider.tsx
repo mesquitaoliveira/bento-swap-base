@@ -1,5 +1,5 @@
 import React from "react";
-import { WalletContext, useWalletState } from "../hooks/useWallet";
+import { WalletContext, useWalletState } from "@application/hooks/useWallet";
 
 interface WalletProviderProps {
   children: React.ReactNode;

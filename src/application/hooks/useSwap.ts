@@ -2,9 +2,9 @@ import { useCallback } from "react";
 import { useAccount } from "wagmi";
 import { useSwapQuote } from "./useSwapQuote";
 import { useSwapExecution } from "./useSwapExecution";
-import { Token } from "../types";
-import { getTokenInfo, getChainInfo } from "../utils/tokensInfo";
-import { NETWORK_TO_CHAIN_ID } from "../utils/chainUtils";
+import { Token } from "@domain/types";
+import { getTokenInfo, getChainInfo } from "@shared/utils/tokensInfo";
+import { NETWORK_TO_CHAIN_ID } from "@shared/utils/chainUtils";
 
 interface SwapParams {
   fromToken: Token;

@@ -1,4 +1,4 @@
-import { Token } from "../types";
+import { Token } from "@domain/types";
 import { getAllTokens, TokenInfo, generateTokensList } from "./tokensInfo";
 
 // Converte tokens do tokensInfo para o formato usado no componente

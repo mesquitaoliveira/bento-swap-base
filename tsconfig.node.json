@@ -11,6 +11,14 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@application/*": ["application/*"],
+      "@domain/*": ["domain/*"],
+      "@presentation/*": ["presentation/*"],
+      "@shared/*": ["shared/*"],
+      "@assets/*": ["assets/*"]
+    },
 
     /* Linting */
     "strict": true,

@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from "react";
 import { useChainId, useSwitchChain } from "wagmi";
-import { NotificationType } from "../components/NotificationCard";
-import { Token } from "../types";
+import { NotificationType } from "@presentation/components/NotificationCard";
+import { Token } from "@domain/types";
 
 interface UseSwapNotificationsProps {
   // Estados da wallet e conexão

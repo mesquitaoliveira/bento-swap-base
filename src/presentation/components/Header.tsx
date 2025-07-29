@@ -15,16 +15,16 @@ import WalletConnectModal from "./WalletConnectModal";
 import {
   getExplorerAddressLink,
   getExplorerName,
-} from "../utils/explorerUtils";
-import { getNativeTokenSymbol } from "../utils/chainUtils";
+} from "@shared/utils/explorerUtils";
+import { getNativeTokenSymbol } from "@shared/utils/chainUtils";
 
-import baseLogo from "../assets/base-logo.png";
-import ethereumLogo from "../assets/ethereum-logo.png";
-import polygonLogo from "../assets/polygon-logo.png";
-import avalancheLogo from "../assets/avalanche-logo.png";
-import arbitrumLogo from "../assets/arbitrum-logo.png";
-import optimismLogo from "../assets/optimism-logo.png";
-import bentoLogo from "../assets/bento-logo.svg";
+import baseLogo from "@assets/base-logo.png";
+import ethereumLogo from "@assets/ethereum-logo.png";
+import polygonLogo from "@assets/polygon-logo.png";
+import avalancheLogo from "@assets/avalanche-logo.png";
+import arbitrumLogo from "@assets/arbitrum-logo.png";
+import optimismLogo from "@assets/optimism-logo.png";
+import bentoLogo from "@assets/bento-logo.svg";
 
 interface HeaderProps {
   className?: string;

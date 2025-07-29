@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
-import { Token } from "../types";
+import { Token } from "@domain/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useAccount } from "wagmi";
-import { useTokenBalances } from "../hooks/useTokenBalances";
+import { useTokenBalances } from "@application/hooks/useTokenBalances";
 import {
   getTokenInfo,
   getChainInfo,
   DEFAULT_TOKEN_LOGO,
   generateTokensList,
-} from "../utils/tokensInfo";
+} from "@shared/utils/tokensInfo";
 
 interface TokenSelectModalProps {
   isOpen: boolean;

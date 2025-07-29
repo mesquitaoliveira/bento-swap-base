@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { getBalance } from "@wagmi/core";
-import { config } from "../components/Web3Provider";
-import { Token } from "../types";
-import { getTokenInfo, getChainInfo } from "../utils/tokensInfo";
+import { config } from "@presentation/components/Web3Provider";
+import { Token } from "@domain/types";
+import { getTokenInfo, getChainInfo } from "@shared/utils/tokensInfo";
 
 interface TokenBalance {
   tokenId: string;

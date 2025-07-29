@@ -1,7 +1,7 @@
 import React from "react";
 import { NotificationCard } from "./NotificationCard";
-import { useSwapNotifications } from "../hooks/useSwapNotifications";
-import { Token } from "../types";
+import { useSwapNotifications } from "@application/hooks/useSwapNotifications";
+import { Token } from "@domain/types";
 
 interface SwapNotificationsProps {
   // Estados da wallet e conexão

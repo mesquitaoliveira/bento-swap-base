@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import TokenSelectModal from "./TokenSelectModal";
-import { Token } from "../types";
+import { Token } from "@domain/types";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -11,8 +11,8 @@ import {
   getTokenInfo,
   getChainInfo,
   DEFAULT_TOKEN_LOGO,
-} from "../utils/tokensInfo";
-import { validateNumericInput } from "../utils/inputValidation";
+} from "@shared/utils/tokensInfo";
+import { validateNumericInput } from "@shared/utils/inputValidation";
 
 interface TokenInputProps {
   token: Token;
