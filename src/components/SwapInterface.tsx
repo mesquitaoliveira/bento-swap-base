@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Settings, ArrowUpDown, AlertCircle, ExternalLink } from "lucide-react";
+import { Settings, ArrowUpDown } from "lucide-react";
 import TokenInput from "./TokenInput";
 import TransactionSummary from "./TransactionSummary";
 import AdvancedSettingsModal, {
   convertSlippageToBasisPoints,
 } from "./AdvancedSettingsModal";
-// Para conversões futuras: import { routeOptionsMap } from "./AdvancedSettingsModal";
+import { SwapNotifications } from "./SwapNotifications";
 import { Token } from "../types";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -17,10 +17,6 @@ import {
   updateTokensWithPrices,
   getUniqueTokenSymbols,
 } from "../utils/tokenHelpers";
-import {
-  getExplorerLinkByNetwork,
-  getExplorerNameByNetwork,
-} from "../utils/explorerUtils";
 import { useAccount } from "wagmi";
 import { ConnectKitButton } from "connectkit";
 
@@ -55,10 +51,30 @@ const SwapInterface: React.FC = () => {
   const [slippage, setSlippage] = useState("1.0");
   const [routePriority, setRoutePriority] = useState("best_return");
   const [isSwapping, setIsSwapping] = useState(false);
+  const [isNetworkSwitching, setIsNetworkSwitching] = useState(false);
   const [tokens] = useState<Token[]>(defaultTokens);
 
   // Hook para estado da wallet (Wagmi)
   const { isConnected } = useAccount();
+  // Hook para chainId atual
+  // @ts-ignore
+  const { chainId } = window.ethereum || {};
+
+  // Efeito para resetar isNetworkSwitching quando a rede correta for detectada
+  useEffect(() => {
+    const networkToChainId: Record<string, number> = {
+      Ethereum: 1,
+      Base: 8453,
+      Arbitrum: 42161,
+      Optimism: 10,
+      Polygon: 137,
+      Avalanche: 43114,
+    };
+    const requiredChainId = networkToChainId[payToken.network] || 1;
+    if (isNetworkSwitching && chainId === requiredChainId) {
+      setIsNetworkSwitching(false);
+    }
+  }, [isNetworkSwitching, payToken.network, chainId]);
 
   // Hook para buscar saldos reais da wallet
   const { updateTokensWithBalances } = useTokenBalances(tokens);
@@ -80,8 +96,7 @@ const SwapInterface: React.FC = () => {
 
   // Hook para obter preços das moedas
   const tokenSymbols = getUniqueTokenSymbols(tokens);
-  const { prices, convertAmount, refetchPrices } = useTokenPrices(tokenSymbols);
-
+  const { prices, convertAmount } = useTokenPrices(tokenSymbols);
 
   // Calcula tokens com saldos e preços atualizados
   const tokensWithData = React.useMemo(() => {
@@ -199,6 +214,9 @@ const SwapInterface: React.FC = () => {
     if (!isConnected) {
       return "Connect Wallet";
     }
+    if (isNetworkSwitching) {
+      return "Trocando Rede...";
+    }
     if (isLoadingQuote) {
       return "Getting Quote...";
     }
@@ -228,6 +246,7 @@ const SwapInterface: React.FC = () => {
       !payAmount ||
       parseFloat(payAmount) === 0 ||
       isSwapping ||
+      isNetworkSwitching ||
       isLoadingQuote ||
       isExecuting ||
       isPending ||
@@ -298,6 +317,27 @@ const SwapInterface: React.FC = () => {
     return false;
   };
 
+  // TODO: Implementar controle de troca de rede com o novo sistema
+  // const handleNetworkSwitched = () => {
+  //   // Recarregar cotação após trocar de rede
+  //   if (
+  //     payAmount &&
+  //     parseFloat(payAmount) > 0 &&
+  //     payToken.symbol &&
+  //     receiveToken.symbol
+  //   ) {
+  //     setTimeout(() => {
+  //       getQuote({
+  //         fromToken: payToken,
+  //         toToken: receiveToken,
+  //         amount: payAmount,
+  //         selectMode: routePriority,
+  //         slippage: convertSlippageToBasisPoints(slippage),
+  //       });
+  //     }, 1000); // Delay para garantir que a rede foi trocada
+  //   }
+  // };
+
   return (
     <>
       <Card className="shadow-xl border-border max-w-md mx-auto">
@@ -336,168 +376,21 @@ const SwapInterface: React.FC = () => {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Wallet Connection Warning */}
-          {!isConnected && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="text-blue-800 font-medium">
-                  Wallet not connected
-                </p>
-                <p className="text-blue-600">
-                  Connect your wallet to start swapping tokens
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Low Amount Warning */}
-          {!quoteError && isAmountLikelyTooLow() && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="text-yellow-800 font-medium">
-                  Amount might be too low
-                </p>
-                <p className="text-yellow-600">
-                  This amount might be below the minimum required for swapping.
-                  Consider increasing it.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Quote Error */}
-          {quoteError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <div className="text-sm flex-1">
-                <p className="text-red-800 font-medium">
-                  {quoteError.includes("Amount is too low")
-                    ? "Amount Too Low"
-                    : quoteError.includes("less than fee")
-                    ? "Amount Below Fee"
-                    : "Quote Error"}
-                </p>
-                <p className="text-red-600">{quoteError}</p>
-                {(quoteError.includes("Min amount") ||
-                  quoteError.includes("less than fee")) && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <p className="text-red-500 text-xs">
-                      💡{" "}
-                      {quoteError.includes("less than fee")
-                        ? "Amount is less than transaction fee"
-                        : "Try increasing the amount you want to swap"}
-                    </p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => extractAndApplyMinAmount(quoteError)}
-                      className="text-xs h-6 px-2 border-red-300 text-red-700 hover:bg-red-100"
-                    >
-                      {quoteError.includes("less than fee")
-                        ? "Use Safe Amount"
-                        : "Use Min Amount"}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Execution Error */}
-          {executionError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <div className="text-sm flex-1 min-w-0">
-                <p className="text-red-800 font-medium">
-                  {executionError.includes("User rejected") ||
-                  executionError.includes("usuário rejeitou")
-                    ? "Transação Cancelada"
-                    : "Erro na Transação"}
-                </p>
-                <p className="text-red-600 break-words">
-                  {executionError.includes("User rejected") ||
-                  executionError.includes("usuário rejeitou")
-                    ? "Você cancelou a transação. Nenhum valor foi transferido."
-                    : executionError}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Success */}
-          {isSuccess && transactionHash && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-5 h-5 bg-green-500 rounded-full flex-shrink-0 flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                </div>
-                <div className="text-sm">
-                  <p className="text-green-800 font-medium">Swap Successful!</p>
-                  <p className="text-green-600">
-                    {payAmount} {payToken.symbol} → {receiveAmount}{" "}
-                    {receiveToken.symbol}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white/50 rounded-lg p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-green-700 font-medium">
-                    Network:
-                  </span>
-                  <span className="text-xs text-green-600">
-                    {payToken.network}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-green-700 font-medium">
-                    Transaction Hash:
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-600 font-mono">
-                      {transactionHash.slice(0, 8)}...
-                      {transactionHash.slice(-6)}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-100"
-                      onClick={() =>
-                        navigator.clipboard.writeText(transactionHash)
-                      }
-                      title="Copy transaction hash"
-                    >
-                      <svg
-                        className="w-3 h-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                        <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                      </svg>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full h-8 border-green-300 text-green-700 hover:bg-green-100 font-medium"
-                onClick={() =>
-                  window.open(
-                    getExplorerLinkByNetwork(transactionHash, payToken.network),
-                    "_blank"
-                  )
-                }
-              >
-                <ExternalLink className="w-3 h-3 mr-2" />
-                View Transaction on {getExplorerNameByNetwork(payToken.network)}
-              </Button>
-            </div>
-          )}
+          {/* Notifications */}
+          <SwapNotifications
+            isConnected={isConnected}
+            payToken={payToken}
+            receiveToken={receiveToken}
+            payAmount={payAmount}
+            receiveAmount={receiveAmount}
+            quoteError={quoteError}
+            executionError={executionError}
+            isSuccess={isSuccess}
+            transactionHash={transactionHash}
+            isNetworkSwitching={isNetworkSwitching}
+            isAmountLikelyTooLow={isAmountLikelyTooLow}
+            onFixAmount={extractAndApplyMinAmount}
+          />
 
           {/* You Pay Section */}
           <div className="relative">
